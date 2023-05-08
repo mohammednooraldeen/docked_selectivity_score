@@ -1,11 +1,10 @@
 import rdkit.Chem.PandasTools
+import pandas as pd
+import rdkit.Chem.PandasTools
 from rdkit import Chem
 from rdkit.Chem import Draw
 from rdkit.Chem.Draw import IPythonConsole
-from molecular_rectifier import Rectifier
 import prolif as plf
-
-
 
 database=Chem.SDMolSupplier("file_path_for_database.sdf",removeHs=False)
 #convert into PDB individual files
@@ -47,4 +46,23 @@ df1 = fp1.to_dataframe()
 df2 = fp2.to_dataframe()
 df1.to_csv('interaction_fingerprints_for_protein1.csv')
 df2.to_csv('interaction_fingerprints_for_protein2.csv')
-df
+
+
+search_strings = ['name', 'HB']
+df_finger_protein1 = pd.DataFrame(pd.read_csv('interaction_fingerprints_for_protein1.csv'))
+#remove the commiting sign(#) to activate string selection of part of finger print interactions
+#df_finger_protein1 = [df_finger_protein1.filter(like=search_string) for search_string in search_strings]
+#df_finger_protein1=pd.concat(df_finger_protein1, axis=1)
+df_finger_protein1
+
+df_finger_protein2 = pd.DataFrame(pd.read_csv('interaction_fingerprints_for_protein2.csv'))
+#remove the commiting sign(#) to activate string selection of part of finger print interactions
+#df_finger_protein2 = [df_finger_protein2.filter(like=search_string) for search_string in search_strings]
+#df_finger_protein2=pd.concat(df_finger_protein2, axis=1)
+df_finger_protein2
+
+# provide csv table for equivalent amino acids on both proteins which occupies similar positins within proteins to calculate selectivity 
+# as two columns with headers contain protein1 and protein2
+# mention the amino acids with number and chain  
+# e.g.  Tyr31.C    Phe30.C ==> which means tyrosine 21 on chain C of protein1 is equivalent to Phenylalanine 30 on chain C of protein 2
+df_comparable_pfGST_hGSTP1 = pd.DataFrame(pd.read_csv('comparable_aa_protein1_protein2.csv'))
