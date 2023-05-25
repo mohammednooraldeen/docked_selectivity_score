@@ -48,6 +48,7 @@ df1.to_csv('interaction_fingerprints_for_protein1.csv')
 df2.to_csv('interaction_fingerprints_for_protein2.csv')
 
 
+
 search_strings = ['name', 'HB']
 df_finger_protein1 = pd.DataFrame(pd.read_csv('interaction_fingerprints_for_protein1.csv'))
 #remove the commiting sign(#) to activate string selection of part of finger print interactions
@@ -63,6 +64,83 @@ df_finger_protein2
 
 # provide csv table for equivalent amino acids on both proteins which occupies similar positins within proteins to calculate selectivity 
 # as two columns with headers contain protein1 and protein2
-# mention the amino acids with number and chain  
-# e.g.  Tyr31.C    Phe30.C ==> which means tyrosine 21 on chain C of protein1 is equivalent to Phenylalanine 30 on chain C of protein 2
-df_comparable_pfGST_hGSTP1 = pd.DataFrame(pd.read_csv('comparable_aa_protein1_protein2.csv'))
+# mention the amino acids with number and chain 
+#       protein1 | protein2
+#       Phe45.C  | Ala60.C
+# e.g.  Tyr31.C  | Phe30.C ==> which means tyrosine 21 on chain C of protein1 is equivalent to Phenylalanine 30 on chain C of protein 2
+df_comparable_pr1_pr2 = pd.DataFrame(pd.read_csv('comparable_aa_protein1_protein2.csv'))
+
+##########################
+#analysis of collected data in csv files
+import numpy as np
+
+
+scores_all=[]
+for i in range(0,len(df_finger_protein2)):
+    try:
+
+            lig_name=df_finger_protein2.name[i]
+            #print (lig_name)
+            lig_row_pfGST=df_finger_protein1.loc[df_finger_protein1['name'] == lig_name]
+            print(lig_name)
+            lig_row_hGSTP1=df_finger_protein2.loc[df_finger_protein2['name'] == lig_name]
+
+            lig_finger_pr1=[]
+            lig_finger_pr2=[]
+            #pf matching
+            for j in range (0,len(df_comparable_pr1_pr2)):
+                 aa_pf=df_comparable_pr1_pr2[j]
+                 matching_columns=[]
+                 for idx, col in enumerate(lig_row_pfGST.columns):
+                     if str(aa_pf).upper() in col:
+                       matching_columns.append(idx)
+                 #print (matching_columns)
+                 for col_value,col_name in zip(list(lig_row_pfGST.iloc[0,matching_columns]),list(lig_row_pfGST.columns[matching_columns])):
+                     tick=0
+                     print (col_value)
+                     print(col_name)
+                     if col_value == True :
+                         if "HB" in str(col_name):
+                             tick=1
+                         else:
+                             tick=0.5
+                     else:
+                         tick=0
+                     lig_finger_pr1.append(tick)
+
+            print (lig_finger_pr1)
+
+            #hu matching
+            for j in range (0,len(df_comparable_pr1_pr2)):
+                 aa_hu=df_comparable_pr1_pr2[j]
+                 matching_columns=[]
+                 for idx, col in enumerate(lig_row_hGSTP1.columns):
+                     if str(aa_hu).upper() in col:
+                       matching_columns.append(idx)
+                 #print (matching_columns)
+                 for col_value,col_name in zip(list(lig_row_hGSTP1.iloc[0,matching_columns]),list(lig_row_hGSTP1.columns[matching_columns])):
+                     tick=0
+                     print (col_value)
+                     print(col_name)
+                     if col_value == True :
+                         if "HB" in str(col_name):
+                             tick=1
+                         else:
+                             tick=0.5
+                     else:
+                         tick=0
+                     lig_finger_pr2.append(tick)
+
+            print (lig_finger_pr2)
+            print("------")
+            #print (set(lig_finger_pr1) & set(lig_finger_pr2))
+            score=round(sum([i+j*-1 for i, j in zip(lig_finger_pr1, lig_finger_pr2) if i>=0 or j>=0])/len(df_comparable_pr1_pr2),2)
+
+            print (score)
+            scores_all.append(score)
+            print("------")
+    except:
+        print("ligand not found")
+
+df_scores_all = pd.DataFrame({'name':df_IFR_hGSTP1.name,'Score': scores_all})
+df_scores_all.to_csv("scores_All_DFR_+-_shorted2_HBonly_fractioned_1_0.5_0.csv")
